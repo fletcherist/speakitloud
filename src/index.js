@@ -1,6 +1,5 @@
 // @flow
 
-const synth = window.speechSynthesis
 const input = document.querySelector('#input-textarea')
 const button = document.querySelector('#button')
 
@@ -10,8 +9,22 @@ const ALPHABET = {
   }
 }
 
-const voices = synth.getVoices()
-console.log(voices)
+const app = {
+  version: '0.0.1',
+  synth: window.speechSynthesis,
+  getVersion () {
+    console.log(this.version)
+  },
+  player: {
+    isPlaying: false,
+    play () { this.isPlaying = true },
+    pause () { this.isPlaying = false },
+    playPause () { this.isPlaying = !this.isPlaying }
+  },
+  speaker: {
+    
+  }
+}
 
 input.addEventListener('paste', (event: Event) => {
   console.log(event)
@@ -19,9 +32,12 @@ input.addEventListener('paste', (event: Event) => {
 
 })
 
-
-const detectLangByWord = (word: string) => {
-  const firstCharCode = word.toLowerCase().charCodeAt(0)
+/*
+ * Analyses the first letter in the word
+ * Now it can guess between cyrilic and latin letter only
+ */
+const detectLangByStr = (str: string) => {
+  const firstCharCode = str.toLowerCase().charCodeAt(0)
   for (let alphabet in ALPHABET) {
     if (firstCharCode >= ALPHABET[alphabet].unicode[0] &&
         firstCharCode <= ALPHABET[alphabet].unicode[1]) {
@@ -42,7 +58,6 @@ const isTheSameLanguage = (
 ) => word1.lang === word2.lang
 
 const joinOneLanguageWords = (words: Array<Object>) => {
-  console.log(words)
   const sentences = []
   words.forEach(word => {
     if (sentences.length === 0) return sentences.push(word)
@@ -51,29 +66,36 @@ const joinOneLanguageWords = (words: Array<Object>) => {
           [sentences[sentences.length - 1].token, word.token].join(' ')
       : sentences.push(word)
   })
+  console.log(sentences)
   return sentences
 }
 
+const splitTextIntoSentences = (text: string): Array => text.split('.')
+const splitSentenceIntoWords = (sentence: string): Array => sentence.split(' ')
+
 const text = input.value
+const sentences = splitTextIntoSentences(text)
+sentences.forEach(sentence => {
+  const textTokens = splitSentenceIntoWords(sentence)
+    .map((token: string) => ({
+      lang: detectLangByStr(token),
+      token: token
+    }))
 
-console.log(text)
-let textTokens = text.split(' ')
-textTokens = textTokens.map((token: string) => ({
-  lang: detectLangByWord(token),
-  token: token
-}))
+  const speakEvents = joinOneLanguageWords(textTokens).map(
+    sentence => {
+      const utterThis = new SpeechSynthesisUtterance(sentence.token)
+      utterThis.lang = sentence.lang
+      utterThis.rate = 1.6
+      return utterThis
+    }
+  )
 
-console.log(joinOneLanguageWords(textTokens))
+  speakEvents.forEach(utter => app.synth.speak(utter))
+})
 
-const speakEvents = joinOneLanguageWords(textTokens).map(
-  sentence => {
-    const utterThis = new SpeechSynthesisUtterance(sentence.token)
-    utterThis.lang = sentence.lang
-    utterThis.rate = 1.3
-    return utterThis
-  }
-)
 
-speakEvents.forEach(utter => synth.speak(utter))
+document.addEventListener('keydown', (event: Event) => {
 
+})
 // button.addEventListener('click', (event) => {})
