@@ -1,82 +1,73 @@
 // @flow
-import Button from './components/button'
-import TextArea from './components/text-area'
 
-const APP_STATE = {
-  mainTextArea: {
-    get text () { return this._text || '' },
-    set ['text'](value) {
-      this._text = value
-      render()
+const synth = window.speechSynthesis
+const input = document.createElement('textarea')
+
+const button = document.createElement('button')
+button.innerText = 'Play'
+
+const ALPHABETS = {
+  'ru-RU': {
+    unicode: [1072, 1103]
+  },
+
+}
+
+const voices = synth.getVoices()
+console.log(voices)
+
+input.addEventListener('paste', (event: Event) => {
+  console.log(event)
+  const text = event.target.value
+
+})
+
+document.body.appendChild(input)
+document.body.appendChild(button)
+
+const detectLanguageByWord = (word: String) => {
+  const firstCharCode = word.charCodeAt(0)
+  for (let alphabet in ALPHABETS) {
+    if (firstCharCode >= ALPHABETS[alphabet].unicode[0] &&
+        firstCharCode <= ALPHABETS[alphabet].unicode[1]) {
+      return alphabet
     }
   }
+  return 'en'
 }
-window.__codex_covers_state__ = APP_STATE
 
-let HeadlineButton
-let MainTextButton
-let AttachImageButton
-let MainTextArea
-
-const App = () => `
-    ${HeadlineButton().component}
-    ${MainTextButton().component}
-    ${AttachImageButton().component}
-    <div>
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="500" height="40" viewBox="0 0 500 40">
-        ${MainTextArea().component}
-      </svg>
-    </div>
-`
-
-function render () {
-  console.log('rerendering', APP_STATE)
-  HeadlineButton = Button.bind(null, {
-    id: 'headline-button',
-    label: 'Headline'
-  })
-
-  MainTextButton = Button.bind(null, {
-    id: 'main-text-button',
-    label: 'Main text'
-  })
-
-  AttachImageButton = Button.bind(null, {
-    id: 'attach-image-button',
-    label: 'Image'
-  })
-
-  MainTextArea = TextArea.bind(null, {
-    id: 'main-text-area',
-    text: APP_STATE.mainTextArea.text
-  })
-  document.body.innerHTML = App()
+const joinOneLanguageWords = (sentences: Array) => {
+  const newSentences = []
+  newSentences.push(sentences[0])
+  console.log(sentences)
+  for (let i = 1; i < sentences.length; i++) {
+    if (sentences[i].language === sentences[i - 1].language) {
+      newSentences[i - 1].token = [
+        newSentences[newSentences.length - 1].token,
+        sentences[i].token
+      ].join(' ')
+    } else {
+      newSentences.push(sentences[i])
+    }
+  }
+  return newSentences
 }
-render()
 
-const attachListener = (
-  type: string,
-  elementId: string,
-  func: Function
-) => document.getElementById(elementId).addEventListener(type, func)
+button.addEventListener('click', (event) => {
+  const text = input.value
+  let textTokens = text.split(' ')
+  textTokens = textTokens.map((token: String) => ({
+    language: detectLanguageByWord(token),
+    token: token
+  }))
 
-const attachClickListener = attachListener.bind(null, 'click')
-
-attachClickListener(HeadlineButton().id, () => console.log('im func'))
-attachClickListener(MainTextButton().id, () => console.log('im another func'))
-attachClickListener(AttachImageButton().id, () => console.log('im third func'))
-
-attachClickListener(MainTextArea().id, (event: Object) => {
-  console.log(event)
-})
-
-attachListener('keydown', MainTextArea().id, (event: Object) => {
-  console.log(event)
-})
-
-window.addEventListener('keydown', (event: Object) => {
-  console.log(event)
-  const { key } = event
-  APP_STATE.mainTextArea.text = APP_STATE.mainTextArea.text + key
+  const speakEvents = joinOneLanguageWords(textTokens).map(
+    sentence => {
+      const utterThis = new SpeechSynthesisUtterance(sentence.token)
+      utterThis.lang = sentence.language
+      return utterThis
+    }
+  )
+  console.log(speakEvents)
+  speakEvents.forEach(utter => synth.speak(utter))
 })

@@ -70,146 +70,74 @@
 "use strict";
 
 
-var _text, _mainTextArea, _mutatorMap;
+var synth = window.speechSynthesis;
+var input = document.createElement('textarea');
 
-var _button = __webpack_require__(1);
+var button = document.createElement('button');
+button.innerText = 'Play';
 
-var _button2 = _interopRequireDefault(_button);
+var ALPHABETS = {
+  'ru-RU': {
+    unicode: [1072, 1103]
+  }
 
-var _textArea = __webpack_require__(2);
+};
 
-var _textArea2 = _interopRequireDefault(_textArea);
+var voices = synth.getVoices();
+console.log(voices);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+input.addEventListener('paste', function (event) {
+  console.log(event);
+  var text = event.target.value;
+});
 
-function _defineEnumerableProperties(obj, descs) { for (var key in descs) { var desc = descs[key]; desc.configurable = desc.enumerable = true; if ("value" in desc) desc.writable = true; Object.defineProperty(obj, key, desc); } return obj; }
+document.body.appendChild(input);
+document.body.appendChild(button);
 
-var APP_STATE = {
-  mainTextArea: (_mainTextArea = {
-    get text() {
-      return this._text || '';
+var detectLanguageByWord = function detectLanguageByWord(word) {
+  var firstCharCode = word.charCodeAt(0);
+  for (var alphabet in ALPHABETS) {
+    if (firstCharCode >= ALPHABETS[alphabet].unicode[0] && firstCharCode <= ALPHABETS[alphabet].unicode[1]) {
+      return alphabet;
     }
-  }, _text = 'text', _mutatorMap = {}, _mutatorMap[_text] = _mutatorMap[_text] || {}, _mutatorMap[_text].set = function (value) {
-    this._text = value;
-    render();
-  }, _defineEnumerableProperties(_mainTextArea, _mutatorMap), _mainTextArea)
-};
-window.__codex_covers_state__ = APP_STATE;
-
-var HeadlineButton = void 0;
-var MainTextButton = void 0;
-var AttachImageButton = void 0;
-var MainTextArea = void 0;
-
-var App = function App() {
-  return '\n    ' + HeadlineButton().component + '\n    ' + MainTextButton().component + '\n    ' + AttachImageButton().component + '\n    <div>\n      <svg xmlns="http://www.w3.org/2000/svg"\n           width="500" height="40" viewBox="0 0 500 40">\n        ' + MainTextArea().component + '\n      </svg>\n    </div>\n';
+  }
+  return 'en';
 };
 
-function render() {
-  console.log('rerendering', APP_STATE);
-  HeadlineButton = _button2.default.bind(null, {
-    id: 'headline-button',
-    label: 'Headline'
-  });
-
-  MainTextButton = _button2.default.bind(null, {
-    id: 'main-text-button',
-    label: 'Main text'
-  });
-
-  AttachImageButton = _button2.default.bind(null, {
-    id: 'attach-image-button',
-    label: 'Image'
-  });
-
-  MainTextArea = _textArea2.default.bind(null, {
-    id: 'main-text-area',
-    text: APP_STATE.mainTextArea.text
-  });
-  document.body.innerHTML = App();
-}
-render();
-
-var attachListener = function attachListener(type, elementId, func) {
-  return document.getElementById(elementId).addEventListener(type, func);
+var joinOneLanguageWords = function joinOneLanguageWords(sentences) {
+  var newSentences = [];
+  newSentences.push(sentences[0]);
+  console.log(sentences);
+  for (var i = 1; i < sentences.length; i++) {
+    if (sentences[i].language === sentences[i - 1].language) {
+      newSentences[i - 1].token = [newSentences[newSentences.length - 1].token, sentences[i].token].join(' ');
+    } else {
+      newSentences.push(sentences[i]);
+    }
+  }
+  return newSentences;
 };
 
-var attachClickListener = attachListener.bind(null, 'click');
-
-attachClickListener(HeadlineButton().id, function () {
-  return console.log('im func');
-});
-attachClickListener(MainTextButton().id, function () {
-  return console.log('im another func');
-});
-attachClickListener(AttachImageButton().id, function () {
-  return console.log('im third func');
-});
-
-attachClickListener(MainTextArea().id, function (event) {
-  console.log(event);
-});
-
-attachListener('keydown', MainTextArea().id, function (event) {
-  console.log(event);
-});
-
-window.addEventListener('keydown', function (event) {
-  console.log(event);
-  var key = event.key;
-
-  APP_STATE.mainTextArea.text = APP_STATE.mainTextArea.text + key;
-});
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-exports.default = Button;
-var ButtonStyles = "\n    color: blue;\n    font-size: 34px;\n";
-
-function Button(props) {
-  var label = props.label,
-      id = props.id;
-
-  var componentId = Math.random().toString().slice(2);
-  return _extends({}, props, {
-    component: "\n      <button style=\"" + ButtonStyles + "\"\n        id=\"" + (id || componentId) + "\">\n        " + label + "\n      </button>\n    "
+button.addEventListener('click', function (event) {
+  var text = input.value;
+  var textTokens = text.split(' ');
+  textTokens = textTokens.map(function (token) {
+    return {
+      language: detectLanguageByWord(token),
+      token: token
+    };
   });
-}
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-exports.default = TextArea;
-function TextArea(props) {
-  var id = props.id,
-      text = props.text;
-
-  var componentId = Math.random().toString().slice(2);
-  return _extends({}, props, {
-    component: '\n      <text x="0" y="35" font-family="Verdana" font-size="35"\n        id="' + (id || componentId) + '">\n        ' + (text || '') + '\n      </text>\n    '
+  var speakEvents = joinOneLanguageWords(textTokens).map(function (sentence) {
+    var utterThis = new SpeechSynthesisUtterance(sentence.token);
+    utterThis.lang = sentence.language;
+    return utterThis;
   });
-}
+  console.log(speakEvents);
+  speakEvents.forEach(function (utter) {
+    return synth.speak(utter);
+  });
+});
 
 /***/ })
 /******/ ]);
