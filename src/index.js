@@ -9,21 +9,35 @@ const ALPHABET = {
   }
 }
 
+class Player {
+  isPlaying: boolean = false
+  play () { this.isPlaying = true }
+  pause () { this.isPlaying = false }
+  playPause () { this.isPlaying = !this.isPlaying }
+}
+
+class Speaker extends Player {
+  synth = window.speechSynthesis
+  constructor () {
+    super()
+    this.synth.onvoicechanged = event => console.log(event)
+    this.synth.onvoiceschanged = event => console.log(event)
+  }
+  speak (utter) {
+    this.synth.speak(utter)
+    console.log(this.synth)
+  }
+  pause () { this.synth.pause() }
+  resume () { this.synth.resume() }
+}
+
 const app = {
   version: '0.0.1',
-  synth: window.speechSynthesis,
   getVersion () {
     console.log(this.version)
   },
-  player: {
-    isPlaying: false,
-    play () { this.isPlaying = true },
-    pause () { this.isPlaying = false },
-    playPause () { this.isPlaying = !this.isPlaying }
-  },
-  speaker: {
-    
-  }
+  player: new Player(),
+  speaker: new Speaker()
 }
 
 input.addEventListener('paste', (event: Event) => {
@@ -91,11 +105,16 @@ sentences.forEach(sentence => {
     }
   )
 
-  speakEvents.forEach(utter => app.synth.speak(utter))
+  speakEvents.forEach(utter => {
+    app.speaker.speak(utter)
+  })
 })
 
-
-document.addEventListener('keydown', (event: Event) => {
-
-})
+// document.addEventListener('keydown', (event: Event) => {
+//   // If space is pressed
+//   if (event.keyCode === 32) {
+//     app.player.playPause()
+//   }
+//   console.log(event.keyCode)
+// })
 // button.addEventListener('click', (event) => {})
