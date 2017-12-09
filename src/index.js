@@ -1,4 +1,5 @@
 // @flow
+import Queue from 'queue'
 
 const input = document.querySelector('#input-textarea')
 const button = document.querySelector('#button')
@@ -43,7 +44,7 @@ class Speaker extends Player {
 }
 
 const app = {
-  version: '0.0.1',
+  version: '0.0.2',
   getVersion () {
     console.log(this.version)
   },
@@ -81,7 +82,7 @@ const isTheSameLanguage = (
   word2: wordType
 ) => word1.lang === word2.lang
 
-const joinOneLanguageWords = (words: Array<wordType>) => {
+const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
   const sentences = []
   words.forEach(word => {
     if (sentences.length === 0) return sentences.push(word)
@@ -103,29 +104,67 @@ const convertWordsIntoTokens = (words: Array<string>): Array<wordType> =>
 const filterWordsArray = (words: Array<wordType>) =>
   words.filter(word => word.token.length !== 0)
 
-const text = input.value.trim()
-const sentences = splitTextIntoSentences(text)
-sentences.forEach(sentence => {
-  let textTokens = compose(
+const createSpeakEvent = (sentence: wordType): Object => {
+  const utterThis = new SpeechSynthesisUtterance(sentence.token)
+  utterThis.lang = sentence.lang
+  utterThis.rate = 1.9
+  return utterThis
+}
+
+const createSpeakEvents = (parts: Array<wordType>): Array<Object> =>
+  parts.map(createSpeakEvent)
+
+const transformSpeakEventsIntoPromises = (speakEvents: Array<Object>) =>
+  speakEvents.map(speakEvent => () => new Promise(resolve => {
+    // speakEvent.onEnd = resolve(() => )
+  }))
+
+function speakItLoud () {
+  const text = input.value.trim()
+  const sentences = splitTextIntoSentences(text)
+  const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
     convertWordsIntoTokens,
     splitSentenceIntoWords
-  )(text)
-  console.log(textTokens)
+  )(sentence))
 
-  const speakEvents = joinOneLanguageWords(textTokens).map(
-    sentence => {
-      const utterThis = new SpeechSynthesisUtterance(sentence.token)
-      utterThis.lang = sentence.lang
-      utterThis.rate = 1.9
-      return utterThis
-    }
-  )
+  console.log(textTokensArray)
+  const logAndContinue = (args) => { console.log(args); return args }
 
-  speakEvents.forEach(utter => {
-    app.speaker.speak(utter)
+  const speakEventsSentences = textTokensArray.map(
+    (textTokens: Array<wordType>): Array<Array<Object>> => compose(
+      // transformSpeakEventsIntoPromises,
+      createSpeakEvents,
+      joinOneLanguageWords
+    )(textTokens))
+
+  const queue = new Queue()
+  speakEventsSentences.forEach(sentence => {
+    sentence.forEach(phrase => {
+      app.speaker.speak(phrase)
+    })
   })
+}
+
+button.addEventListener('click', (event) => {
+  speakItLoud()
 })
+
+// const speakEvents = compose(
+//   // transformSpeakEventsIntoPromises,
+//   (parts: Array<wordType>): Array<Object> => parts.map(createSpeakEvent),
+//   logAndContinue,
+//   joinOneLanguageWords,
+//   // logAndContinue
+// )(textTokensArray[0])
+
+// console.log(speakEvents)
+// app.speaker.speak(speakEvents[0])
+// console.log(queue)
+
+// queue.push(() => new Promise(resolve => {
+
+// }))
 
 // let current = 1
 // setInterval(() => {
@@ -140,7 +179,7 @@ sentences.forEach(sentence => {
 //   }
 //   console.log(event.keyCode)
 // })
-// button.addEventListener('click', (event) => {})
+
 
 // input.addEventListener('paste', (event: Event) => {
 //   console.log(event)
