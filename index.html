@@ -3,10 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+    <style type="text/css">
+      .input-textarea {
+        height: 500px;
+        border: 1px solid black;
+        max-width: 500px;
+        width: 100%;
+        outline-width: 0;
+      }
+    </style>
 </head>
 <body>
     <div id='app'></div>
-    <textarea id='input-textarea' style='height: 500px; width: 250px;'>Заратустра  спустился один с горы, и никто не повстречался
+    <textarea id='input-textarea' class='input-textarea'>Заратустра  спустился один с горы, и никто не повстречался
 ему. Но когда вошел он в лес,  перед  ним  неожиданно  предстал
 старец,   покинувший  свою  священную  хижину,  чтобы  поискать
 кореньев в лесу. И так говорил старец Заратустре:
@@ -31,6 +40,7 @@
       <button id='button'>Speak it loud</button>
       <button id='decrement-speed'>-</button>
       <button id='increment-speed'>+</button>
+      <div id='current-speed'>speed: 1.0</div>
     </div>
 </body>
 <script src='./dist/bundle.js'></script>

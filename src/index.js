@@ -1,10 +1,11 @@
 // @flow
 
-const input = document.querySelector('#input-textarea')
-const button = document.querySelector('#button')
+const $input = document.querySelector('#input-textarea')
+const $button = document.querySelector('#button')
 
-const incrementSpeedButton = document.querySelector('#increment-speed')
-const decrementSpeedButton = document.querySelector('#decrement-speed')
+const $incrementSpeedButton = document.querySelector('#increment-speed')
+const $decrementSpeedButton = document.querySelector('#decrement-speed')
+const $currentSpeedElement = document.querySelector('#current-speed')
 
 const ALPHABET = {
   'ru-RU': {
@@ -33,7 +34,7 @@ class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
   isSpeaking: boolean = false
-  currentSpeed: double = 1.0
+  currentSpeed: number = 1.0
 
   // constructor () {
   //   super()
@@ -41,12 +42,19 @@ class Speaker {
   //   this.synth.onvoiceschanged = event => console.log(event)
   // }
   speak (utter) {
+    if (!utter && !this.currentUtterance) return false
     this.currentUtterance = utter || this.currentUtterance
     this.currentUtterance.rate = this.currentSpeed
+    this.play()
     this.synth.speak(this.currentUtterance)
     console.log(this.synth)
   }
-  stop () { this.synth.calcel() }
+  stop () {
+    this.currentUtterance = null
+    this.synth.cancel()
+    this.synth.pause()
+  }
+
   setSpeed (value: number) {
     // this.currentUtterance.rate = value
     // this.speak()
@@ -63,8 +71,18 @@ class Speaker {
     this.isSpeaking = !this.isSpeaking
     this.isSpeaking ? this.synth.pause() : this.synth.resume()
   }
-  incrementSpeed () { this.currentSpeed += 0.1 }
-  decrementSpeed () { this.currentSpeed -= 0.1 }
+  incrementSpeed () {
+    this.stop()
+    this.currentSpeed += 0.1
+    $currentSpeedElement.innerHTML = `speed ${this.currentSpeed.toPrecision(2)}`
+    this.speak()
+  }
+  decrementSpeed () {
+    this.stop()
+    this.currentSpeed -= 0.1
+    this.speak()
+    $currentSpeedElement.innerHTML = `speed ${this.currentSpeed.toPrecision(2)}`
+  }
 }
 
 const app = {
@@ -73,7 +91,7 @@ const app = {
     console.log(this.version)
   },
   speaker: new Speaker(),
-  currentUtteranceIndex: 0
+  currentUtteranceIndex: 0,
 }
 
 /*
@@ -148,7 +166,7 @@ const concatSpeakEventsSentences =
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
 app.speakItLoud = () => {
-  const text = input.value.trim()
+  const text = $input.value.trim()
   const sentences = splitTextIntoSentences(text)
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
@@ -179,15 +197,15 @@ app.speakItLoud = () => {
   serial(promises).then(console.log)
 }
 
-button.addEventListener('click', (event) => {
+$button.addEventListener('click', (event) => {
   console.log('clicked')
   app.speakItLoud()
 })
 
 console.log(app.speaker)
-// window.addEventListener('beforeunload', event => {
-//   console.log(app.speaker.pause())
-// })
+window.addEventListener('beforeunload', event => {
+  console.log(app.speaker.stop())
+})
 
 document.addEventListener('keydown', (event: Event) => {
   // If space is pressed
@@ -196,11 +214,11 @@ document.addEventListener('keydown', (event: Event) => {
   }
 })
 
-incrementSpeedButton.addEventListener('click', event => {
+$incrementSpeedButton.addEventListener('click', event => {
   app.speaker.incrementSpeed()
 })
 
-decrementSpeedButton.addEventListener('click', event => {
+$decrementSpeedButton.addEventListener('click', event => {
   app.speaker.decrementSpeed()
 })
 
