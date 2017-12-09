@@ -147,6 +147,7 @@ function speakItLoud () {
 }
 
 button.addEventListener('click', (event) => {
+  console.log('clicked')
   speakItLoud()
 })
 
