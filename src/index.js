@@ -171,6 +171,11 @@ const concatSpeakEventsSentences =
 app.speakItLoud = () => {
   const text = formatText($input.innerText.trim())
   const sentences = splitTextIntoSentences(text)
+  console.log(sentences)
+
+  $input.innerHTML = $input.innerText
+    .replace(new RegExp(sentences[0]), `<mark>${sentences[0]}</mark>`)
+
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
     convertWordsIntoTokens,

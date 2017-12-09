@@ -1,0 +1,68 @@
+:root {
+  --main-color-1: black;
+}
+
+.app {
+  width: 100%;
+  max-width: 500px;
+  margin: 0px auto;
+}
+
+.input-textarea {
+  height: 500px;
+  border-bottom: 1px solid #eee;
+  max-width: 500px;
+  width: 100%;
+  outline-width: 0;
+  font-size: 18px;
+  padding: 5px 10px 20px;
+  overflow: scroll;
+  overflow-x: hidden;
+  margin: 0px auto;
+}
+
+mark {
+  padding: 5px;
+}
+
+.controllers {
+  width: 100%;
+  display: flex;
+}
+
+.controllers__wrapper {
+  margin: 5vh auto;
+}
+
+.button {
+  border-radius: 50px;
+  border: 1px solid var(--main-color-1);
+  background-color: white;
+  font-size: 20px;
+  outline-width: 0;
+  padding: 10px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.button__speak {
+  width: 150px;
+}
+
+.progress {
+  margin-top: 3vh;
+}
+
+.progress__bar {
+  height: 10px;
+  background-color: var(--main-color-1);
+}
+
+.progress__point {
+  height: 16px;
+  width: 16px;
+  border-radius: 50px;
+  background-color: blue;
+  border: 1px solid blue;
+  margin-top: -13px;
+}
