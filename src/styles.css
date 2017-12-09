@@ -7,6 +7,7 @@
   max-width: 500px;
   margin: 0px auto;
   overflow-x: hidden;
+  font-family: 'Helvetica Neue', Helvetica, Arial;
 }
 
 .input-textarea {
@@ -31,6 +32,8 @@ mark {
 .controllers {
   width: 100%;
   display: flex;
+  position: absolute;
+  bottom: 0;
 }
 
 .controllers__wrapper {

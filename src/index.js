@@ -14,6 +14,9 @@ const ALPHABET = {
   }
 }
 
+// when speaking speed is 1
+const DEFAULT_WORDS_PER_SECOND = 117.6
+
 // fp composition & pipe helpers
 const pipe = (fn, ...fns) => (...args) => fns.reduce((result, fn) => fn(result), fn(...args))
 const compose = (...fns) => (...args) => pipe(...fns.reverse())(...args)
@@ -35,7 +38,7 @@ class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
   isSpeaking: boolean = false
-  currentSpeed: number = 1.9
+  currentSpeed: number = 1
 
   // constructor () {
   //   super()
@@ -87,7 +90,7 @@ class Speaker {
 }
 
 const app = {
-  version: '0.0.2',
+  version: '0.0.3',
   getVersion () {
     console.log(this.version)
   },
@@ -142,6 +145,7 @@ const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
 const formatText = (text: string) => text.replace(/\–/g, '.')
 const splitTextIntoSentences = (text: string): Array<string> => text.split('.')
 const splitSentenceIntoWords = (sentence: string): Array<string> => sentence.split(' ')
+const countWordsInText = (text: string) => splitSentenceIntoWords(text).length
 const convertWordsIntoTokens = (words: Array<string>): Array<wordType> =>
   words.map((token: string) => ({
     lang: detectLangByStr(token),
@@ -173,6 +177,8 @@ app.speakItLoud = () => {
   const text = formatText($input.value.trim())
   const sentences = splitTextIntoSentences(text)
   console.log(sentences)
+
+  console.log(countWordsInText(text))
 
   app.sentences = sentences
 
@@ -207,7 +213,8 @@ app.speakItLoud = () => {
     }))
   )
 
-  serial(promises).then(console.log)
+  console.time('read')
+  serial(promises).then(() => console.timeEnd('read'))
 }
 
 $button.addEventListener('click', (event) => {
