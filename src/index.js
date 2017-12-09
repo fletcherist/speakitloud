@@ -3,6 +3,9 @@
 const input = document.querySelector('#input-textarea')
 const button = document.querySelector('#button')
 
+const incrementSpeedButton = document.querySelector('#increment-speed')
+const decrementSpeedButton = document.querySelector('#decrement-speed')
+
 const ALPHABET = {
   'ru-RU': {
     unicode: [1072, 1103]
@@ -30,6 +33,8 @@ class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
   isSpeaking: boolean = false
+  currentSpeed: double = 1.0
+
   // constructor () {
   //   super()
   //   this.synth.onvoicechanged = event => console.log(event)
@@ -37,7 +42,7 @@ class Speaker {
   // }
   speak (utter) {
     this.currentUtterance = utter || this.currentUtterance
-    this.currentUtterance.rate = this.currentUtterance.rate + 0.1
+    this.currentUtterance.rate = this.currentSpeed
     this.synth.speak(this.currentUtterance)
     console.log(this.synth)
   }
@@ -58,6 +63,8 @@ class Speaker {
     this.isSpeaking = !this.isSpeaking
     this.isSpeaking ? this.synth.pause() : this.synth.resume()
   }
+  incrementSpeed () { this.currentSpeed += 0.1 }
+  decrementSpeed () { this.currentSpeed -= 0.1 }
 }
 
 const app = {
@@ -65,7 +72,8 @@ const app = {
   getVersion () {
     console.log(this.version)
   },
-  speaker: new Speaker()
+  speaker: new Speaker(),
+  currentUtteranceIndex: 0
 }
 
 /*
@@ -139,7 +147,7 @@ const concatSpeakEventsSentences =
   (speakEventsSentences: Array<Array<Object>>): Array<Object> =>
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
-function speakItLoud () {
+app.speakItLoud = () => {
   const text = input.value.trim()
   const sentences = splitTextIntoSentences(text)
   const textTokensArray = sentences.map(sentence => compose(
@@ -160,9 +168,9 @@ function speakItLoud () {
   concatSpeakEventsSentences(speakEventsSentences).forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
       app.speaker.speak(phrase)
-      console.log(phrase)
+      app.currentUtteranceIndex = app.currentUtteranceIndex + 1
+      console.log(app.currentUtteranceIndex)
       phrase.onend = () => {
-        console.log(phrase.text)
         resolve(phrase.text)
       }
     }))
@@ -173,7 +181,7 @@ function speakItLoud () {
 
 button.addEventListener('click', (event) => {
   console.log('clicked')
-  speakItLoud()
+  app.speakItLoud()
 })
 
 console.log(app.speaker)
@@ -186,6 +194,14 @@ document.addEventListener('keydown', (event: Event) => {
   if (event.keyCode === 32) {
     app.speaker.playPause()
   }
+})
+
+incrementSpeedButton.addEventListener('click', event => {
+  app.speaker.incrementSpeed()
+})
+
+decrementSpeedButton.addEventListener('click', event => {
+  app.speaker.decrementSpeed()
 })
 
 // input.addEventListener('paste', (event: Event) => {
