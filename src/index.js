@@ -43,7 +43,7 @@ class Speaker extends Player {
 }
 
 const app = {
-  version: '0.0.1',
+  version: '0.0.2',
   getVersion () {
     console.log(this.version)
   },
