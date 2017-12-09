@@ -44,6 +44,8 @@
   "dependencies": {
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
-    "queue": "^4.4.2"
+    "nosleep.js": "^0.7.0",
+    "queue": "^4.4.2",
+    "striptags": "^3.1.1"
   }
 }

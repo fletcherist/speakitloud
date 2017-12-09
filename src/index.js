@@ -1,4 +1,5 @@
 // @flow
+import NoSleep from 'nosleep.js'
 
 const $input = document.querySelector('#input-textarea')
 const $button = document.querySelector('#button')
@@ -34,7 +35,7 @@ class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
   isSpeaking: boolean = false
-  currentSpeed: number = 1.0
+  currentSpeed: number = 1.9
 
   // constructor () {
   //   super()
@@ -52,7 +53,7 @@ class Speaker {
   stop () {
     this.currentUtterance = null
     this.synth.cancel()
-    this.synth.pause()
+    // this.synth.pause()
   }
 
   setSpeed (value: number) {
@@ -92,6 +93,7 @@ const app = {
   },
   speaker: new Speaker(),
   currentUtteranceIndex: 0,
+  noSleep: new NoSleep()
 }
 
 /*
@@ -136,6 +138,7 @@ const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
   return sentences
 }
 
+const formatText = (text: string) => text.replace(/\–/g, '.')
 const splitTextIntoSentences = (text: string): Array<string> => text.split('.')
 const splitSentenceIntoWords = (sentence: string): Array<string> => sentence.split(' ')
 const convertWordsIntoTokens = (words: Array<string>): Array<wordType> =>
@@ -166,7 +169,7 @@ const concatSpeakEventsSentences =
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
 app.speakItLoud = () => {
-  const text = $input.value.trim()
+  const text = formatText($input.innerText.trim())
   const sentences = splitTextIntoSentences(text)
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
@@ -199,6 +202,7 @@ app.speakItLoud = () => {
 
 $button.addEventListener('click', (event) => {
   console.log('clicked')
+  app.noSleep.enable()
   app.speakItLoud()
 })
 
@@ -222,7 +226,21 @@ $decrementSpeedButton.addEventListener('click', event => {
   app.speaker.decrementSpeed()
 })
 
-// input.addEventListener('paste', (event: Event) => {
-//   console.log(event)
-//   const text = event.target.value
-// })
+$input.addEventListener('paste', (event: Event) => {
+  event.preventDefault()
+
+  let pastedText = ''
+  if (window.clipboardData && window.clipboardData.getData) { // IE
+    pastedText = window.clipboardData.getData('Text')
+  } else if (event.clipboardData && event.clipboardData.getData) {
+    pastedText = event.clipboardData.getData('text/html')
+  }
+
+  const hiddenInput = document.createElement('div')
+  hiddenInput.innerHTML = pastedText
+
+  const text = hiddenInput.textContent
+
+  $input.innerText = text
+  console.log(text)
+})
