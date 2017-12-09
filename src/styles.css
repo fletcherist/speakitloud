@@ -6,10 +6,12 @@
   width: 100%;
   max-width: 500px;
   margin: 0px auto;
+  overflow-x: hidden;
 }
 
 .input-textarea {
-  height: 500px;
+  height: 75vh;
+  border: 0px;
   border-bottom: 1px solid #eee;
   max-width: 500px;
   width: 100%;
@@ -22,7 +24,8 @@
 }
 
 mark {
-  padding: 5px;
+  /*padding: 5px;*/
+  background-color: rgba(0, 0, 0, .05);
 }
 
 .controllers {
@@ -54,15 +57,15 @@ mark {
 }
 
 .progress__bar {
-  height: 10px;
-  background-color: var(--main-color-1);
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .progress__point {
   height: 16px;
   width: 16px;
   border-radius: 50px;
-  background-color: blue;
-  border: 1px solid blue;
+  background-color: black;
   margin-top: -13px;
+  cursor: pointer;
 }

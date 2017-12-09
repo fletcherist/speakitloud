@@ -93,7 +93,8 @@ const app = {
   },
   speaker: new Speaker(),
   currentUtteranceIndex: 0,
-  noSleep: new NoSleep()
+  noSleep: new NoSleep(),
+  sentences: []
 }
 
 /*
@@ -169,12 +170,11 @@ const concatSpeakEventsSentences =
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
 app.speakItLoud = () => {
-  const text = formatText($input.innerText.trim())
+  const text = formatText($input.value.trim())
   const sentences = splitTextIntoSentences(text)
   console.log(sentences)
 
-  $input.innerHTML = $input.innerText
-    .replace(new RegExp(sentences[0]), `<mark>${sentences[0]}</mark>`)
+  app.sentences = sentences
 
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
@@ -195,6 +195,11 @@ app.speakItLoud = () => {
     promises.push(() => new Promise((resolve, reject) => {
       app.speaker.speak(phrase)
       app.currentUtteranceIndex = app.currentUtteranceIndex + 1
+      // $input.innerHTML = $input.innerText.replace(
+      //   new RegExp(phrase.text),
+      //   `<mark>${phrase.text}</mark>`
+      // )
+
       console.log(app.currentUtteranceIndex)
       phrase.onend = () => {
         resolve(phrase.text)
