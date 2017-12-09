@@ -1,5 +1,4 @@
 // @flow
-import Queue from 'queue'
 
 const input = document.querySelector('#input-textarea')
 const button = document.querySelector('#button')
@@ -14,32 +13,50 @@ const ALPHABET = {
 const pipe = (fn, ...fns) => (...args) => fns.reduce((result, fn) => fn(result), fn(...args))
 const compose = (...fns) => (...args) => pipe(...fns.reverse())(...args)
 
-class Player {
-  isPlaying: boolean = false
-  play () { this.isPlaying = true }
-  pause () { this.isPlaying = false }
-  playPause () { this.isPlaying = !this.isPlaying }
-}
+const concat = list => Array.prototype.concat.bind(list)
+const promiseConcat = f => x => f().then(concat(x))
+const promiseReduce = (acc, x) => acc.then(promiseConcat(x))
+/*
+ * serial executes Promises sequentially.
+ * @param {funcs} An array of funcs that return promises.
+ * @example
+ * const urls = ['/url1', '/url2', '/url3']
+ * serial(urls.map(url => () => $.ajax(url)))
+ *     .then(console.log.bind(console))
+ */
+const serial = funcs => funcs.reduce(promiseReduce, Promise.resolve([]))
 
-class Speaker extends Player {
+class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
-  constructor () {
-    super()
-    this.synth.onvoicechanged = event => console.log(event)
-    this.synth.onvoiceschanged = event => console.log(event)
-  }
+  isSpeaking: boolean = false
+  // constructor () {
+  //   super()
+  //   this.synth.onvoicechanged = event => console.log(event)
+  //   this.synth.onvoiceschanged = event => console.log(event)
+  // }
   speak (utter) {
     this.currentUtterance = utter || this.currentUtterance
     this.currentUtterance.rate = this.currentUtterance.rate + 0.1
     this.synth.speak(this.currentUtterance)
     console.log(this.synth)
   }
-  pause () { this.synth.pause() }
-  resume () { this.synth.resume() }
+  stop () { this.synth.calcel() }
   setSpeed (value: number) {
     // this.currentUtterance.rate = value
     // this.speak()
+  }
+  play () {
+    this.isSpeaking = true
+    this.synth.resume()
+  }
+  pause () {
+    this.isSpeaking = false
+    this.synth.pause()
+  }
+  playPause () {
+    this.isSpeaking = !this.isSpeaking
+    this.isSpeaking ? this.synth.pause() : this.synth.resume()
   }
 }
 
@@ -48,7 +65,6 @@ const app = {
   getVersion () {
     console.log(this.version)
   },
-  player: new Player(),
   speaker: new Speaker()
 }
 
@@ -114,10 +130,14 @@ const createSpeakEvent = (sentence: wordType): Object => {
 const createSpeakEvents = (parts: Array<wordType>): Array<Object> =>
   parts.map(createSpeakEvent)
 
-const transformSpeakEventsIntoPromises = (speakEvents: Array<Object>) =>
+const transformSpeakEventsIntoCallbacks = (speakEvents: Array<Object>) =>
   speakEvents.map(speakEvent => () => new Promise(resolve => {
     // speakEvent.onEnd = resolve(() => )
   }))
+
+const concatSpeakEventsSentences =
+  (speakEventsSentences: Array<Array<Object>>): Array<Object> =>
+    speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
 function speakItLoud () {
   const text = input.value.trim()
@@ -128,9 +148,7 @@ function speakItLoud () {
     splitSentenceIntoWords
   )(sentence))
 
-  console.log(textTokensArray)
-  const logAndContinue = (args) => { console.log(args); return args }
-
+  // const logAndContinue = (args) => { console.log(args); return args }
   const speakEventsSentences = textTokensArray.map(
     (textTokens: Array<wordType>): Array<Array<Object>> => compose(
       // transformSpeakEventsIntoPromises,
@@ -138,12 +156,19 @@ function speakItLoud () {
       joinOneLanguageWords
     )(textTokens))
 
-  const queue = new Queue()
-  speakEventsSentences.forEach(sentence => {
-    sentence.forEach(phrase => {
+  const promises = []
+  concatSpeakEventsSentences(speakEventsSentences).forEach(phrase =>
+    promises.push(() => new Promise((resolve, reject) => {
       app.speaker.speak(phrase)
-    })
-  })
+      console.log(phrase)
+      phrase.onend = () => {
+        console.log(phrase.text)
+        resolve(phrase.text)
+      }
+    }))
+  )
+
+  serial(promises).then(console.log)
 }
 
 button.addEventListener('click', (event) => {
@@ -151,36 +176,17 @@ button.addEventListener('click', (event) => {
   speakItLoud()
 })
 
-// const speakEvents = compose(
-//   // transformSpeakEventsIntoPromises,
-//   (parts: Array<wordType>): Array<Object> => parts.map(createSpeakEvent),
-//   logAndContinue,
-//   joinOneLanguageWords,
-//   // logAndContinue
-// )(textTokensArray[0])
-
-// console.log(speakEvents)
-// app.speaker.speak(speakEvents[0])
-// console.log(queue)
-
-// queue.push(() => new Promise(resolve => {
-
-// }))
-
-// let current = 1
-// setInterval(() => {
-//   app.speaker.setSpeed(current)
-//   current += .2
-// }, 1000)
-
-// document.addEventListener('keydown', (event: Event) => {
-//   // If space is pressed
-//   if (event.keyCode === 32) {
-//     app.player.playPause()
-//   }
-//   console.log(event.keyCode)
+console.log(app.speaker)
+// window.addEventListener('beforeunload', event => {
+//   console.log(app.speaker.pause())
 // })
 
+document.addEventListener('keydown', (event: Event) => {
+  // If space is pressed
+  if (event.keyCode === 32) {
+    app.speaker.playPause()
+  }
+})
 
 // input.addEventListener('paste', (event: Event) => {
 //   console.log(event)
