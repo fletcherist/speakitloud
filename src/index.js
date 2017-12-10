@@ -11,11 +11,14 @@ const $currentSpeedElement = document.querySelector('#current-speed')
 const ALPHABET = {
   'ru-RU': {
     unicode: [1072, 1103]
+  },
+  'number': {
+    unicode: [48, 57]
   }
 }
 
 // when speaking speed is 1
-const DEFAULT_WORDS_PER_SECOND = 117.6
+const DEFAULT_WORDS_PER_MINUTE = 117.6
 
 // fp composition & pipe helpers
 const pipe = (fn, ...fns) => (...args) => fns.reduce((result, fn) => fn(result), fn(...args))
@@ -107,6 +110,7 @@ const app = {
 const detectLangByStr = (str: string) => {
   let currentCharIndex = 0
   let maxCharIndex = 3
+
   while (currentCharIndex <= maxCharIndex) {
     const charCode = str.toLowerCase().charCodeAt(currentCharIndex)
     for (let alphabet in ALPHABET) {
@@ -117,6 +121,7 @@ const detectLangByStr = (str: string) => {
     }
     currentCharIndex++
   }
+
   return 'en'
 }
 
@@ -125,16 +130,23 @@ type wordType = {
   token: string
 }
 
+/*
+ * If the words are in the same language, returns truw
+ * If one of the words is number, returns true
+ * Otherwise, returns false
+ */
 const isTheSameLanguage = (
   word1: wordType,
   word2: wordType
-) => word1.lang === word2.lang
+) => word1.lang === word2.lang ||
+  [word1.lang, word2.lang].includes('number')
 
 const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
   const sentences = []
   words.forEach(word => {
     if (sentences.length === 0) return sentences.push(word)
-    isTheSameLanguage(sentences[sentences.length - 1], word)
+    const previousWord = sentences[sentences.length - 1]
+    isTheSameLanguage(previousWord, word)
       ? sentences[sentences.length - 1].token =
           [sentences[sentences.length - 1].token, word.token].join(' ')
       : sentences.push(word)
@@ -153,6 +165,12 @@ const convertWordsIntoTokens = (words: Array<string>): Array<wordType> =>
   }))
 const filterWordsArray = (words: Array<wordType>) =>
   words.filter(word => word.token.length !== 0)
+
+/*
+ * A Medium-like function calculates time left reading
+ */
+const timeLeftReading = (text: string, speed: number = 1) =>
+  countWordsInText(text) / (DEFAULT_WORDS_PER_MINUTE * speed)
 
 const createSpeakEvent = (sentence: wordType): Object => {
   const utterThis = new SpeechSynthesisUtterance(sentence.token)
@@ -174,11 +192,11 @@ const concatSpeakEventsSentences =
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
 app.speakItLoud = () => {
-  const text = formatText($input.value.trim())
+  const text = formatText($input.innerText.trim())
   const sentences = splitTextIntoSentences(text)
   console.log(sentences)
 
-  console.log(countWordsInText(text))
+  console.log('timeLeftReading', timeLeftReading(text, app.speaker.currentSpeed))
 
   app.sentences = sentences
 
@@ -258,6 +276,6 @@ $input.addEventListener('paste', (event: Event) => {
 
   const text = hiddenInput.textContent
 
-  $input.innerText = text
+  $input.innerHTML = text
   console.log(text)
 })
