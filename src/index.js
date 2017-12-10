@@ -6,7 +6,6 @@ const $button = document.querySelector('#button')
 
 const $incrementSpeedButton = document.querySelector('#increment-speed')
 const $decrementSpeedButton = document.querySelector('#decrement-speed')
-const $currentSpeedElement = document.querySelector('#current-speed')
 
 const ALPHABET = {
   'ru-RU': {
@@ -19,6 +18,7 @@ const ALPHABET = {
 
 // when speaking speed is 1
 const DEFAULT_WORDS_PER_MINUTE = 117.6
+const MIN_SPEED = 0.52
 
 // fp composition & pipe helpers
 const pipe = (fn, ...fns) => (...args) => fns.reduce((result, fn) => fn(result), fn(...args))
@@ -41,7 +41,8 @@ class Speaker {
   synth = window.speechSynthesis
   currentUtterance: Object
   isSpeaking: boolean = false
-  currentSpeed: number = 1
+  isChangingSpeed: boolean = false
+  currentSpeed: number = 1.1
 
   // constructor () {
   //   super()
@@ -58,8 +59,7 @@ class Speaker {
   }
   stop () {
     this.currentUtterance = null
-    this.synth.cancel()
-    // this.synth.pause()
+    // this.synth.cancel()
   }
 
   setSpeed (value: number) {
@@ -78,18 +78,17 @@ class Speaker {
     this.isSpeaking = !this.isSpeaking
     this.isSpeaking ? this.synth.pause() : this.synth.resume()
   }
-  incrementSpeed () {
-    this.stop()
-    this.currentSpeed += 0.1
-    $currentSpeedElement.innerHTML = `speed ${this.currentSpeed.toPrecision(2)}`
+  _changeSpeed (delta: number) {
+    this.synth.cancel()
+    this.currentSpeed = delta > 0
+      ? this.currentSpeed + delta
+      : this.currentSpeed <= MIN_SPEED ? MIN_SPEED : this.currentSpeed + delta
+    this.isChangingSpeed = true
     this.speak()
+    console.log(this.currentSpeed)
   }
-  decrementSpeed () {
-    this.stop()
-    this.currentSpeed -= 0.1
-    this.speak()
-    $currentSpeedElement.innerHTML = `speed ${this.currentSpeed.toPrecision(2)}`
-  }
+  incrementSpeed () { this._changeSpeed(0.1) }
+  decrementSpeed () { this._changeSpeed(-0.1) }
 }
 
 const app = {
@@ -102,6 +101,7 @@ const app = {
   noSleep: new NoSleep(),
   sentences: []
 }
+window.app = app
 
 /*
  * Analyses the first letter in the word
@@ -125,16 +125,15 @@ const detectLangByStr = (str: string) => {
   return 'en'
 }
 
-type wordType = {
-  lang: string,
-  token: string
-}
-
 /*
  * If the words are in the same language, returns truw
  * If one of the words is number, returns true
  * Otherwise, returns false
  */
+type wordType = {
+  lang: string,
+  token: string
+}
 const isTheSameLanguage = (
   word1: wordType,
   word2: wordType
@@ -219,14 +218,19 @@ app.speakItLoud = () => {
     promises.push(() => new Promise((resolve, reject) => {
       app.speaker.speak(phrase)
       app.currentUtteranceIndex = app.currentUtteranceIndex + 1
-      // $input.innerHTML = $input.innerText.replace(
-      //   new RegExp(phrase.text),
-      //   `<mark>${phrase.text}</mark>`
-      // )
+      $input.innerHTML = $input.innerText.replace(
+        new RegExp(phrase.text),
+        `<mark>${phrase.text}</mark>`
+      )
 
       console.log(app.currentUtteranceIndex)
       phrase.onend = () => {
-        resolve(phrase.text)
+        if (app.speaker.isChangingSpeed) {
+          app.speaker.isChangingSpeed = false
+          return
+        }
+        console.log('phrase endend')
+        return resolve(phrase.text)
       }
     }))
   )
@@ -253,6 +257,7 @@ document.addEventListener('keydown', (event: Event) => {
   }
 })
 
+$input.focus()
 $incrementSpeedButton.addEventListener('click', event => {
   app.speaker.incrementSpeed()
 })

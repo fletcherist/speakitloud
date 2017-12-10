@@ -3,26 +3,28 @@
 }
 
 .app {
-  max-width: 500px;
+  max-width: 700px;
   width: 100vw;
   margin: 0px auto;
   overflow-x: hidden;
-  font-family: 'Helvetica Neue', Helvetica, Arial;
+  font-family: CustomSerif,Georgia,Cambria,'Times New Roman',serif;
 }
 
 .input-textarea {
   height: 75vh;
   border: 0px;
   border-bottom: 1px solid #eee;
-  max-width: 500px;
+  max-width: 700px;
   width: 100%;
   outline-width: 0;
-  font-size: 18px;
   padding: 5px 10px 20px;
   overflow: scroll;
   overflow-x: hidden;
   margin: 0px auto;
   line-height: 1.5em;
+
+  font-size: 21px;
+  line-height: 1.58;
 }
 
 mark {
