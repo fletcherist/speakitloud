@@ -94,7 +94,7 @@ class Speaker {
 }
 
 const app = {
-  version: '0.0.3',
+  version: '0.0.4',
   getVersion () {
     console.log(this.version)
   },
