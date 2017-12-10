@@ -7,6 +7,9 @@ const $button = document.querySelector('#button')
 const $incrementSpeedButton = document.querySelector('#increment-speed')
 const $decrementSpeedButton = document.querySelector('#decrement-speed')
 
+const $progressBar = document.querySelector('#progress-bar')
+const $progressPointer = document.querySelector('#progress-pointer')
+
 const ALPHABET = {
   'ru-RU': {
     unicode: [1072, 1103]
@@ -45,11 +48,6 @@ class Speaker {
   isStopped: boolean = false
   currentSpeed: number = 1.1
 
-  // constructor () {
-  //   super()
-  //   this.synth.onvoicechanged = event => console.log(event)
-  //   this.synth.onvoiceschanged = event => console.log(event)
-  // }
   speak (utter) {
     if (!utter && !this.currentUtterance) return false
     this.currentUtterance = utter || this.currentUtterance
@@ -70,19 +68,19 @@ class Speaker {
     // this.currentUtterance.rate = value
     // this.speak()
   }
-  play () {
+  play() {
     this.isStopped = true
     this.synth.resume()
   }
-  pause () {
+  pause() {
     this.isStopped = false
     this.synth.pause()
   }
-  playPause () {
+  playPause() {
     this.isStopped = !this.isStopped
     this.isStopped ? this.synth.pause() : this.synth.resume()
   }
-  _changeSpeed (delta: number) {
+  _changeSpeed(delta: number) {
     this.synth.cancel()
     this.currentSpeed = delta > 0
       ? this.currentSpeed + delta
@@ -91,8 +89,8 @@ class Speaker {
     this.speak()
     console.log(this.currentSpeed)
   }
-  incrementSpeed () { this._changeSpeed(0.1) }
-  decrementSpeed () { this._changeSpeed(-0.1) }
+  incrementSpeed() { this._changeSpeed(0.1) }
+  decrementSpeed() { this._changeSpeed(-0.1) }
 }
 
 const app = {
@@ -100,10 +98,15 @@ const app = {
   getVersion () {
     console.log(this.version)
   },
+  reader: {
+    tokensCount: 0,
+    currentTokenIndex: 0,
+    get currentProgress() {
+      return this.currentTokenIndex / this.tokensCount
+    }
+  },
   speaker: new Speaker(),
-  currentUtteranceIndex: 0,
-  noSleep: new NoSleep(),
-  sentences: []
+  noSleep: new NoSleep()
 }
 window.app = app
 
@@ -185,11 +188,6 @@ const createSpeakEvent = (sentence: wordType): Object => {
 const createSpeakEvents = (parts: Array<wordType>): Array<Object> =>
   parts.map(createSpeakEvent)
 
-const transformSpeakEventsIntoCallbacks = (speakEvents: Array<Object>) =>
-  speakEvents.map(speakEvent => () => new Promise(resolve => {
-    // speakEvent.onEnd = resolve(() => )
-  }))
-
 const concatSpeakEventsSentences =
   (speakEventsSentences: Array<Array<Object>>): Array<Object> =>
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
@@ -201,8 +199,6 @@ app.speakItLoud = () => {
 
   console.log('timeLeftReading', timeLeftReading(text, app.speaker.currentSpeed))
 
-  app.sentences = sentences
-
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
     convertWordsIntoTokens,
@@ -212,22 +208,27 @@ app.speakItLoud = () => {
   // const logAndContinue = (args) => { console.log(args); return args }
   const speakEventsSentences = textTokensArray.map(
     (textTokens: Array<wordType>): Array<Array<Object>> => compose(
-      // transformSpeakEventsIntoPromises,
       createSpeakEvents,
       joinOneLanguageWords
     )(textTokens))
 
   const promises = []
-  concatSpeakEventsSentences(speakEventsSentences).forEach(phrase =>
+  const phrases = concatSpeakEventsSentences(speakEventsSentences)
+  app.reader.tokensCount = phrases.length
+  phrases.forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
       app.speaker.speak(phrase)
-      app.currentUtteranceIndex = app.currentUtteranceIndex + 1
+      app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
       $input.innerHTML = $input.innerText.replace(
         new RegExp(phrase.text),
         `<mark>${phrase.text}</mark>`
       )
 
-      console.log(app.currentUtteranceIndex)
+      window.pointer = $progressPointer
+      $progressPointer.style.transform =
+        `translate(${app.reader.currentProgress * $progressBar.clientWidth}px, 0)`
+
+      console.log(app.reader.currentProgress)
       phrase.onend = () => {
         if (app.speaker.isChangingSpeed) {
           app.speaker.isChangingSpeed = false

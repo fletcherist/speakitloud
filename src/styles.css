@@ -18,19 +18,20 @@ body {
 }
 
 .input-textarea {
-  height: 75vh;
+  height: 80vh;
   border: 0px;
   max-width: 700px;
   width: 100%;
   outline-width: 0;
-  padding: 5px 10px 20px;
+  padding: 5px 15px 20px;
   overflow: scroll;
   overflow-x: hidden;
   margin: 0px auto;
-  line-height: 1.5em;
 
   font-size: 21px;
-  line-height: 1.58;
+  line-height: 1.58em;
+
+  outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word
 }
 
 mark {
@@ -44,13 +45,14 @@ mark {
   max-width: 700px;
   /*display: flex;*/
   position: fixed;
-  bottom: 0;
+  bottom: 1rem;
   margin: 10px auto;
 }
 
 .buttons {
   width: 90%;
   margin: 0px auto;
+  margin-top: 10px;
 }
 
 .button {
@@ -59,12 +61,12 @@ mark {
   background-color: white;
   font-size: 20px;
   /*outline-width: 0;*/
-  padding: 10px;
   min-width: 40px;
   min-height: 40px;
   background-color: #2196F3;
   color: white;
   box-shadow: -1px 1px 3px rgba(0, 0, 0, .1);
+  cursor: pointer;
 }
 
 .button__speak {
@@ -91,4 +93,5 @@ mark {
   background-color: var(--main-color-2);
   margin-top: -13px;
   cursor: pointer;
+  transition: transform 1s;
 }
