@@ -113,10 +113,13 @@ const app = {
         `translate(${progress * $progressBar.clientWidth - 16}px, 0)`
     },
     highlightCurrentSentence(text: string) {
-      $input.innerHTML = $input.innerText.replace(
-        new RegExp(text),
-        `<mark>${text}</mark>`
-      )
+      $input.querySelector(`#token-${app.reader.currentTokenIndex}`)
+        .classList.add('token--highlighted')
+      /* Remove highlight from previous token*/
+      if (app.reader.currentTokenIndex > 0) {
+        $input.querySelector(`#token-${app.reader.currentTokenIndex - 1}`)
+          .classList.remove('token--highlighted')
+      }
     }
   }
 }
@@ -231,9 +234,10 @@ app.speakItLoud = () => {
     promises.push(() => new Promise((resolve, reject) => {
 
       app.speaker.speak(phrase)
+      app.dom.highlightCurrentSentence(phrase.text)
+
       app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
       app.dom.updateProgressBar(app.reader.currentProgress)
-      app.dom.highlightCurrentSentence(phrase.text)
 
       phrase.onend = () => {
         if (app.speaker.isChangingSpeed) {
@@ -251,13 +255,18 @@ app.speakItLoud = () => {
   serial(promises).then(console.log)
 }
 
+/*
+ * Triggers when «speak» button is pressed
+ */
 $button.addEventListener('click', (event) => {
   console.log('clicked')
   app.noSleep.enable()
   app.speakItLoud()
 })
 
-console.log(app.speaker)
+/*
+ * Triggers when user is trying to refresh/close app
+ */
 window.addEventListener('beforeunload', event => {
   console.log(app.speaker.stop())
 })
@@ -278,6 +287,10 @@ $decrementSpeedButton.addEventListener('click', event => {
   app.speaker.decrementSpeed()
 })
 
+$input.addEventListener('click', (event: Event) => {
+  console.log(event)
+})
+
 $input.addEventListener('paste', (event: Event) => {
   event.preventDefault()
 
@@ -292,7 +305,17 @@ $input.addEventListener('paste', (event: Event) => {
   hiddenInput.innerHTML = pastedText
 
   const text = hiddenInput.textContent
+  const sentences = splitTextIntoSentences(text)
+  console.log(sentences)
+  sentences.forEach((sentence, index) => {
+    const divToken = document.createElement('div')
+    divToken.innerText = sentence + '.'
+    divToken.id = `token-${index}`
+    divToken.classList.add('token')
+    divToken.setAttribute('spellcheck', 'false')
+    $input.appendChild(divToken)
+  })
 
-  $input.innerHTML = text
+  // $input.innerHTML = text
   console.log(text)
 })

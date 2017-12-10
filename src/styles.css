@@ -21,7 +21,7 @@ body {
   height: 90vh;
   border: 0px;
   max-width: 700px;
-  width: 90%;
+  width: 93%;
   outline-width: 0;
   padding: 5px 15px 20px;
   overflow: scroll;
@@ -38,11 +38,6 @@ body {
 .input-container {
 }
 
-mark {
-  padding: 5px 0px;
-  background-color: var(--main-color-3);
-}
-
 .controllers {
   /*max-width: 100vw;*/
   width: 100%;
@@ -51,8 +46,8 @@ mark {
   position: fixed;
   bottom: 0rem;
   padding-bottom: 1rem;
-  padding-top: 3rem;
-  background: linear-gradient(to top, white 70%, transparent);
+  padding-top: 1rem;
+  background-color: white;
 }
 
 .buttons {
@@ -101,4 +96,12 @@ mark {
   margin-top: -13px;
   cursor: pointer;
   transition: transform 1s;
+}
+
+.token {
+  margin-bottom: 10px;
+}
+
+.token--highlighted {
+  background-color: var(--main-color-3);
 }
