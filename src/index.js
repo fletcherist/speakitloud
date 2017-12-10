@@ -106,7 +106,19 @@ const app = {
     }
   },
   speaker: new Speaker(),
-  noSleep: new NoSleep()
+  noSleep: new NoSleep(),
+  dom: {
+    updateProgressBar(progress: number) {
+      $progressPointer.style.transform =
+        `translate(${progress * $progressBar.clientWidth - 16}px, 0)`
+    },
+    highlightCurrentSentence(text: string) {
+      $input.innerHTML = $input.innerText.replace(
+        new RegExp(text),
+        `<mark>${text}</mark>`
+      )
+    }
+  }
 }
 window.app = app
 
@@ -217,18 +229,12 @@ app.speakItLoud = () => {
   app.reader.tokensCount = phrases.length
   phrases.forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
+
       app.speaker.speak(phrase)
       app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
-      $input.innerHTML = $input.innerText.replace(
-        new RegExp(phrase.text),
-        `<mark>${phrase.text}</mark>`
-      )
+      app.dom.updateProgressBar(app.reader.currentProgress)
+      app.dom.highlightCurrentSentence(phrase.text)
 
-      window.pointer = $progressPointer
-      $progressPointer.style.transform =
-        `translate(${app.reader.currentProgress * $progressBar.clientWidth}px, 0)`
-
-      console.log(app.reader.currentProgress)
       phrase.onend = () => {
         if (app.speaker.isChangingSpeed) {
           app.speaker.isChangingSpeed = false
@@ -237,14 +243,12 @@ app.speakItLoud = () => {
         if (app.speaker.isStopped) {
           return false
         }
-        console.log('phrase endend')
         return resolve(phrase.text)
       }
     }))
   )
 
-  console.time('read')
-  serial(promises).then(() => console.timeEnd('read'))
+  serial(promises).then(console.log)
 }
 
 $button.addEventListener('click', (event) => {

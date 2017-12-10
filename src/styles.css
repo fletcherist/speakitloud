@@ -18,24 +18,28 @@ body {
 }
 
 .input-textarea {
-  height: 80vh;
+  height: 90vh;
   border: 0px;
   max-width: 700px;
-  width: 100%;
+  width: 90%;
   outline-width: 0;
   padding: 5px 15px 20px;
   overflow: scroll;
   overflow-x: hidden;
-  margin: 0px auto;
 
   font-size: 21px;
   line-height: 1.58em;
 
+  margin: 0px auto;
+
   outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word
 }
 
+.input-container {
+}
+
 mark {
-  /*padding: 5px;*/
+  padding: 5px 0px;
   background-color: var(--main-color-3);
 }
 
@@ -45,14 +49,17 @@ mark {
   max-width: 700px;
   /*display: flex;*/
   position: fixed;
-  bottom: 1rem;
-  margin: 10px auto;
+  bottom: 0rem;
+  padding-bottom: 1rem;
+  padding-top: 3rem;
+  background: linear-gradient(to top, white 70%, transparent);
 }
 
 .buttons {
   width: 90%;
   margin: 0px auto;
   margin-top: 10px;
+  background: transparent;
 }
 
 .button {
