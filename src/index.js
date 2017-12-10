@@ -10,6 +10,8 @@ const $decrementSpeedButton = document.querySelector('#decrement-speed')
 const $progressBar = document.querySelector('#progress-bar')
 const $progressPointer = document.querySelector('#progress-pointer')
 
+const $timeLeft = document.querySelector('#time-left')
+
 const ALPHABET = {
   'ru-RU': {
     unicode: [1072, 1103]
@@ -101,8 +103,13 @@ const app = {
   reader: {
     tokensCount: 0,
     currentTokenIndex: 0,
+    textReadingDuration: 0,
     get currentProgress() {
       return this.currentTokenIndex / this.tokensCount
+    },
+    get timeLeftReading() {
+      return this.textReadingDuration -
+        (this.textReadingDuration * this.currentProgress)
     }
   },
   speaker: new Speaker(),
@@ -112,10 +119,14 @@ const app = {
       $progressPointer.style.transform =
         `translate(${progress * $progressBar.clientWidth - 16}px, 0)`
     },
+    updateTimeLeft() {
+      /* calculates time left reading */
+      $timeLeft.innerText = `${app.reader.timeLeftReading.toFixed(1)} min`
+    },
     highlightCurrentSentence(text: string) {
       $input.querySelector(`#token-${app.reader.currentTokenIndex}`)
         .classList.add('token--highlighted')
-      /* Remove highlight from previous token*/
+      /* Remove highlight from previous token */
       if (app.reader.currentTokenIndex > 0) {
         $input.querySelector(`#token-${app.reader.currentTokenIndex - 1}`)
           .classList.remove('token--highlighted')
@@ -190,7 +201,7 @@ const filterWordsArray = (words: Array<wordType>) =>
 /*
  * A Medium-like function calculates time left reading
  */
-const timeLeftReading = (text: string, speed: number = 1) =>
+const getTextReadingDuration = (text: string, speed: number = 1) =>
   countWordsInText(text) / (DEFAULT_WORDS_PER_MINUTE * speed)
 
 const createSpeakEvent = (sentence: wordType): Object => {
@@ -212,7 +223,7 @@ app.speakItLoud = () => {
   const sentences = splitTextIntoSentences(text)
   console.log(sentences)
 
-  console.log('timeLeftReading', timeLeftReading(text, app.speaker.currentSpeed))
+  app.reader.textReadingDuration = getTextReadingDuration(text, app.speaker.currentSpeed)
 
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
@@ -238,6 +249,7 @@ app.speakItLoud = () => {
 
       app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
       app.dom.updateProgressBar(app.reader.currentProgress)
+      app.dom.updateTimeLeft()
 
       phrase.onend = () => {
         if (app.speaker.isChangingSpeed) {
@@ -315,7 +327,6 @@ $input.addEventListener('paste', (event: Event) => {
     divToken.setAttribute('spellcheck', 'false')
     $input.appendChild(divToken)
   })
-
   // $input.innerHTML = text
   console.log(text)
 })
