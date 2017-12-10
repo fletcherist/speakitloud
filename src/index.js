@@ -42,6 +42,7 @@ class Speaker {
   currentUtterance: Object
   isSpeaking: boolean = false
   isChangingSpeed: boolean = false
+  isStopped: boolean = false
   currentSpeed: number = 1.1
 
   // constructor () {
@@ -55,11 +56,14 @@ class Speaker {
     this.currentUtterance.rate = this.currentSpeed
     this.play()
     this.synth.speak(this.currentUtterance)
+    this.isStopped = false
     console.log(this.synth)
   }
   stop () {
     this.currentUtterance = null
-    // this.synth.cancel()
+    this.synth.cancel()
+    this.isStopped = true
+    return false
   }
 
   setSpeed (value: number) {
@@ -67,16 +71,16 @@ class Speaker {
     // this.speak()
   }
   play () {
-    this.isSpeaking = true
+    this.isStopped = true
     this.synth.resume()
   }
   pause () {
-    this.isSpeaking = false
+    this.isStopped = false
     this.synth.pause()
   }
   playPause () {
-    this.isSpeaking = !this.isSpeaking
-    this.isSpeaking ? this.synth.pause() : this.synth.resume()
+    this.isStopped = !this.isStopped
+    this.isStopped ? this.synth.pause() : this.synth.resume()
   }
   _changeSpeed (delta: number) {
     this.synth.cancel()
@@ -228,6 +232,9 @@ app.speakItLoud = () => {
         if (app.speaker.isChangingSpeed) {
           app.speaker.isChangingSpeed = false
           return
+        }
+        if (app.speaker.isStopped) {
+          return false
         }
         console.log('phrase endend')
         return resolve(phrase.text)

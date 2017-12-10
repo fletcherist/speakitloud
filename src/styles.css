@@ -1,5 +1,12 @@
 :root {
-  --main-color-1: black;
+  --main-color-1: #2196F3;
+  --main-color-2: #90CAF9;
+  --main-color-3: #E3F2FD;
+}
+
+body {
+  padding: 0;
+  margin: 0;
 }
 
 .app {
@@ -13,7 +20,6 @@
 .input-textarea {
   height: 75vh;
   border: 0px;
-  border-bottom: 1px solid #eee;
   max-width: 700px;
   width: 100%;
   outline-width: 0;
@@ -29,31 +35,36 @@
 
 mark {
   /*padding: 5px;*/
-  background-color: rgba(0, 0, 0, .05);
+  background-color: var(--main-color-3);
 }
 
 .controllers {
   /*max-width: 100vw;*/
   width: 100%;
+  max-width: 700px;
   /*display: flex;*/
-  position: relative;
+  position: fixed;
   bottom: 0;
-  margin: 10px;
+  margin: 10px auto;
 }
 
-.controllers__wrapper {
-  margin: 5vh auto;
+.buttons {
+  width: 90%;
+  margin: 0px auto;
 }
 
 .button {
   border-radius: 50px;
-  border: 1px solid var(--main-color-1);
+  border: 0px;
   background-color: white;
   font-size: 20px;
-  outline-width: 0;
+  /*outline-width: 0;*/
   padding: 10px;
   min-width: 40px;
   min-height: 40px;
+  background-color: #2196F3;
+  color: white;
+  box-shadow: -1px 1px 3px rgba(0, 0, 0, .1);
 }
 
 .button__speak {
@@ -62,12 +73,14 @@ mark {
 
 .progress {
   /*margin-top: 3vh;*/
-  width: 100%;
+  width: 90%;
+  margin: 0px auto;
 }
 
 .progress__bar {
   height: 8px;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--main-color-3);
+  border-radius: 50px;
   width: 100%;
 }
 
@@ -75,7 +88,7 @@ mark {
   height: 16px;
   width: 16px;
   border-radius: 50px;
-  background-color: black;
+  background-color: var(--main-color-2);
   margin-top: -13px;
   cursor: pointer;
 }
