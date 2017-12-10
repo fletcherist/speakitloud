@@ -300,6 +300,7 @@ $decrementSpeedButton.addEventListener('click', event => {
 })
 
 $input.addEventListener('click', (event: Event) => {
+  // TODO: start from the selected sentence (token)
   console.log(event)
 })
 
@@ -307,11 +308,10 @@ $input.addEventListener('paste', (event: Event) => {
   event.preventDefault()
 
   let pastedText = ''
-  if (window.clipboardData && window.clipboardData.getData) { // IE
-    pastedText = window.clipboardData.getData('Text')
-  } else if (event.clipboardData && event.clipboardData.getData) {
-    pastedText = event.clipboardData.getData('text/html')
-  }
+  const clipboardData = event.clipboardData ||
+    window.clipboardData || event.originalEvent.clipboardData
+
+  pastedText = clipboardData.getData('Text')
 
   const hiddenInput = document.createElement('div')
   hiddenInput.innerHTML = pastedText
