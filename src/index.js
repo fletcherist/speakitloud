@@ -2,6 +2,7 @@
 import NoSleep from 'nosleep.js'
 
 const $input = document.querySelector('#input-textarea')
+const $initialText = document.querySelector('#initial-text')
 const $button = document.querySelector('#button')
 
 const $incrementSpeedButton = document.querySelector('#increment-speed')
@@ -291,6 +292,10 @@ document.addEventListener('keydown', (event: Event) => {
 })
 
 $input.focus()
+
+$initialText.focus()
+
+
 $incrementSpeedButton.addEventListener('click', event => {
   app.speaker.incrementSpeed()
 })
@@ -300,11 +305,18 @@ $decrementSpeedButton.addEventListener('click', event => {
 })
 
 $input.addEventListener('click', (event: Event) => {
+  $initialText.remove()
   // TODO: start from the selected sentence (token)
   console.log(event)
 })
 
+$input.addEventListener('keydown', (event: Event) => {
+  $initialText.remove()
+  console.log('dfjsoifjdsoif')
+})
+
 $input.addEventListener('paste', (event: Event) => {
+  $initialText.remove()
   event.preventDefault()
 
   let pastedText = ''

@@ -4,6 +4,8 @@
   --primary-3: #E3F2FD;
 
   --secondary-3: rgba(0, 0, 0, .3);
+
+  --line-height: 1.58em;
 }
 
 body {
@@ -26,18 +28,24 @@ body {
   width: 93%;
   outline-width: 0;
   padding: 5px 15px 20px;
-  overflow: scroll;
   overflow-x: hidden;
 
   font-size: 21px;
-  line-height: 1.58em;
+  line-height: var(--line-height);
 
   margin: 0px auto;
+  margin-top: 1rem;
 
-  outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word
+  outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word;
 }
 
 .input-container {
+}
+
+.initial-text {
+  font-size: 1.75em;
+  line-height: 1.1em;
+  color: var(--secondary-3);
 }
 
 .controllers {
@@ -122,3 +130,13 @@ body {
   width: 100px;
   text-align: right;
 }
+
+/*.input-textarea::-webkit-scrollbar
+{
+  width: 12px;
+  background-color: var(--primary-3);
+}
+
+.input-textarea::-webkit-scrollbar-thumb  {
+  background-color: var(--primary-2);
+}*/
