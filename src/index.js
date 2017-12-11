@@ -245,7 +245,7 @@ app.speakItLoud = () => {
     promises.push(() => new Promise((resolve, reject) => {
 
       app.speaker.speak(phrase)
-      app.dom.highlightCurrentSentence(phrase.text)
+      // app.dom.highlightCurrentSentence(phrase.text)
 
       app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
       app.dom.updateProgressBar(app.reader.currentProgress)
