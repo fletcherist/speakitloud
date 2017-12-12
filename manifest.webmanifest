@@ -1,0 +1,9 @@
+{
+  "name": "SpeakItLoud",
+  "short_name": "SpeakItLoud",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "A simply text-to-speech app, focused on accessebility",
+  "icons": []
+}
