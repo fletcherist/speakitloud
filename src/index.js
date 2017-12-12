@@ -72,10 +72,7 @@ class Speaker {
     this.currentUtterance.rate = this.currentSpeed
     // if (this.isStopped) this.play()
 
-    console.log(this.synth)
     this.synth.speak(this.currentUtterance)
-    console.log(this.synth)
-    window.synth = this.synth
     this.isStopped = false
   }
   stop() {
@@ -138,12 +135,17 @@ const app = {
       $timeLeft.innerText = `${app.reader.timeLeftReading.toFixed(1)} min`
     },
     highlightCurrentSentence(text: string) {
-      $input.querySelector(`#token-${app.reader.currentTokenIndex}`)
-        .classList.add('token--highlighted')
+      const $currentSentence = $input.querySelector(`#token-${app.reader.currentTokenIndex}`)
+      if ($currentSentence) {
+        $currentSentence.classList.add('token--highlighted')
+      }
+      const $previousSentence = $input.querySelector(`#token-${app.reader.currentTokenIndex - 1}`)
+
       /* Remove highlight from previous token */
       if (app.reader.currentTokenIndex > 0) {
-        $input.querySelector(`#token-${app.reader.currentTokenIndex - 1}`)
-          .classList.remove('token--highlighted')
+        if ($previousSentence) {
+          $previousSentence.classList.remove('token--highlighted')
+        }
       }
     }
   }
@@ -261,9 +263,11 @@ app.speakItLoud = () => {
     promises.push(() => new Promise((resolve, reject) => {
 
       app.speaker.speak(phrase)
-      // app.dom.highlightCurrentSentence(phrase.text)
 
+      console.log(app.reader.currentTokenIndex)
+      app.dom.highlightCurrentSentence(phrase.text)
       app.reader.currentTokenIndex = app.reader.currentTokenIndex + 1
+
       app.dom.updateProgressBar(app.reader.currentProgress)
       app.dom.updateTimeLeft()
 
