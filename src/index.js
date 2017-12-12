@@ -315,8 +315,10 @@ $input.addEventListener('keydown', (event: Event) => {
   console.log('dfjsoifjdsoif')
 })
 
+$input.classList.add('input-textarea--initial')
 $input.addEventListener('paste', (event: Event) => {
   $initialText.remove()
+  $input.classList.remove('input-textarea--initial')
   event.preventDefault()
 
   let pastedText = ''
@@ -332,7 +334,7 @@ $input.addEventListener('paste', (event: Event) => {
   const sentences = splitTextIntoSentences(text)
   console.log(sentences)
   sentences.forEach((sentence, index) => {
-    const divToken = document.createElement('div')
+    const divToken = document.createElement('span')
     divToken.innerText = sentence + '.'
     divToken.id = `token-${index}`
     divToken.classList.add('token')
