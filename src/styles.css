@@ -46,7 +46,6 @@ body {
 .input-textarea--initial {
   font-size: var(--fs-big);
   line-height: 1.1em;
-  color: var(--secondary-3);
 }
 
 .input-container {

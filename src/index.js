@@ -25,6 +25,7 @@ const ALPHABET = {
 // when speaking speed is 1
 const DEFAULT_WORDS_PER_MINUTE = 117.6
 const MIN_SPEED = 0.52
+const DEFAULT_LANGUAGE = 'en-US'
 
 // fp composition & pipe helpers
 const pipe = (fn, ...fns) => (...args) => fns.reduce((result, fn) => fn(result), fn(...args))
@@ -49,27 +50,39 @@ class Speaker {
   isSpeaking: boolean = false
   isChangingSpeed: boolean = false
   isStopped: boolean = false
-  currentSpeed: number = 1.1
+  currentSpeed: number = 1.2
 
-  speak (utter) {
-    if (!utter && !this.currentUtterance) return false
-    this.currentUtterance = utter || this.currentUtterance
-    this.currentUtterance.rate = this.currentSpeed
-    this.play()
-    this.synth.speak(this.currentUtterance)
-    this.isStopped = false
-    console.log(this.synth)
+  constructor() {
+    // this.synth.cancel()
   }
-  stop () {
+
+  speak(utter) {
+    if (!utter && !this.currentUtterance) return false
+    if (!utter) {
+      console.error('Empty utter text')
+      return false
+    }
+    this.currentUtterance = utter || this.currentUtterance
+    if (this.synth.speaking) {
+      console.error(`can't speak ${utter}. Already speaking`)
+      this.synth.cancel()
+      this.speak(utter)
+      return false
+    }
+    this.currentUtterance.rate = this.currentSpeed
+    // if (this.isStopped) this.play()
+
+    console.log(this.synth)
+    this.synth.speak(this.currentUtterance)
+    console.log(this.synth)
+    window.synth = this.synth
+    this.isStopped = false
+  }
+  stop() {
     this.currentUtterance = null
     this.synth.cancel()
     this.isStopped = true
     return false
-  }
-
-  setSpeed (value: number) {
-    // this.currentUtterance.rate = value
-    // this.speak()
   }
   play() {
     this.isStopped = true
@@ -92,13 +105,13 @@ class Speaker {
     this.speak()
     console.log(this.currentSpeed)
   }
-  incrementSpeed() { this._changeSpeed(0.1) }
-  decrementSpeed() { this._changeSpeed(-0.1) }
+  incrementSpeed() { this._changeSpeed(0.2) }
+  decrementSpeed() { this._changeSpeed(-0.2) }
 }
 
 const app = {
   version: '0.0.4',
-  getVersion () {
+  getVersion() {
     console.log(this.version)
   },
   reader: {
@@ -156,7 +169,7 @@ const detectLangByStr = (str: string) => {
     currentCharIndex++
   }
 
-  return 'en'
+  return DEFAULT_LANGUAGE
 }
 
 /*
@@ -187,7 +200,7 @@ const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
   return sentences
 }
 
-const formatText = (text: string) => text.replace(/\–/g, '.')
+const formatText = (text: string) => text.replace(/\–/g, '.').replace(/—/g, ';')
 const splitTextIntoSentences = (text: string): Array<string> => text.split('.')
 const splitSentenceIntoWords = (sentence: string): Array<string> => sentence.split(' ')
 const countWordsInText = (text: string) => splitSentenceIntoWords(text).length
@@ -207,7 +220,7 @@ const getTextReadingDuration = (text: string, speed: number = 1) =>
 
 const createSpeakEvent = (sentence: wordType): Object => {
   const utterThis = new SpeechSynthesisUtterance(sentence.token)
-  utterThis.lang = sentence.lang
+  utterThis.lang = sentence.lang || DEFAULT_LANGUAGE
   utterThis.rate = 1.9
   return utterThis
 }
@@ -232,6 +245,7 @@ app.speakItLoud = () => {
     splitSentenceIntoWords
   )(sentence))
 
+  console.log(textTokensArray)
   // const logAndContinue = (args) => { console.log(args); return args }
   const speakEventsSentences = textTokensArray.map(
     (textTokens: Array<wordType>): Array<Array<Object>> => compose(
@@ -241,6 +255,7 @@ app.speakItLoud = () => {
 
   const promises = []
   const phrases = concatSpeakEventsSentences(speakEventsSentences)
+  console.log(phrases)
   app.reader.tokensCount = phrases.length
   phrases.forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
@@ -271,9 +286,10 @@ app.speakItLoud = () => {
 /*
  * Triggers when «speak» button is pressed
  */
+
+app.noSleep.enable()
 $button.addEventListener('click', (event) => {
   console.log('clicked')
-  app.noSleep.enable()
   app.speakItLoud()
 })
 
@@ -288,6 +304,10 @@ document.addEventListener('keydown', (event: Event) => {
   // If space is pressed
   if (event.keyCode === 32) {
     app.speaker.playPause()
+  }
+
+  if (event.keyCode === 13 && (event.metaKey || event.ctrlKey)) {
+    app.speakItLoud()
   }
 })
 
@@ -312,7 +332,6 @@ $input.addEventListener('click', (event: Event) => {
 
 $input.addEventListener('keydown', (event: Event) => {
   $initialText.remove()
-  console.log('dfjsoifjdsoif')
 })
 
 $input.classList.add('input-textarea--initial')
