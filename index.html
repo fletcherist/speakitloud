@@ -14,16 +14,21 @@
       </div>
           <div class='controllers'>
             <div class='progress'>
-              <div class='progress__bar' id='progress-bar'></div>
+              <div class='progress__bar' id='progress-bar'
+                aria-label='Progress of reading'></div>
               <div class='progress__point' id='progress-pointer'></div>
             </div>
             <div class='controllers__block'>
               <div class='buttons'>
-                <button id='button' class='button button__speak'>Speak</button>
-                <button id='decrement-speed' class='button'>-</button>
-                <button id='increment-speed' class='button'>+</button>
+                <button id='button' class='button button__speak'
+                  aria-label='Speak this text'>Speak</button>
+                <button id='decrement-speed' class='button'
+                  aria-label='Speak faster'>-</button>
+                <button id='increment-speed' class='button'
+                  aria-label='Speak slower'>+</button>
               </div>
-              <div class='time-left' id='time-left'></div>
+              <div class='time-left' id='time-left'
+                aria-label='Time left till the end'></div>
             </div>
           </div>
     </div>
