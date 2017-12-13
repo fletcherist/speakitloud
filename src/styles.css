@@ -135,6 +135,7 @@ body {
 
 .token--highlighted {
   background-color: var(--primary-3);
+  padding: 5px 0px;
 }
 
 .time-left {
@@ -143,13 +144,3 @@ body {
   width: 100px;
   text-align: right;
 }
-
-/*.input-textarea::-webkit-scrollbar
-{
-  width: 12px;
-  background-color: var(--primary-3);
-}
-
-.input-textarea::-webkit-scrollbar-thumb  {
-  background-color: var(--primary-2);
-}*/

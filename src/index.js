@@ -201,7 +201,7 @@ const joinOneLanguageWords = (words: Array<wordType>): Array<wordType> => {
   return sentences
 }
 
-const formatText = (text: string) => text.replace(/\–/g, '.').replace(/—/g, ';')
+const formatText = (text: string) => text
 const splitTextIntoSentences = (text: string): Array<string> => text.split('.')
 const splitSentenceIntoWords = (sentence: string): Array<string> => sentence.split(' ')
 const countWordsInText = (text: string) => splitSentenceIntoWords(text).length
@@ -271,7 +271,7 @@ const renderTransformedText = () => {
   $input.innerHTML = ''
   app.reader.textTokens.forEach((token, index) => {
     const divToken = document.createElement('span')
-    divToken.innerText = token.text + '.'
+    divToken.innerText = token.text + '. '
     divToken.id = `token-${index}`
     divToken.classList.add('token')
     divToken.setAttribute('spellcheck', 'false')
@@ -285,7 +285,6 @@ app.speakItLoud = () => {
   renderTransformedText()
 
   const promises = []
-  console.log(app.reader.textTokens)
   app.reader.textTokens.forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
 
@@ -317,10 +316,8 @@ app.speakItLoud = () => {
 /*
  * Triggers when «speak» button is pressed
  */
-
 app.noSleep.enable()
 $button.addEventListener('click', (event) => {
-  console.log('clicked')
   app.speakItLoud()
 })
 
@@ -343,9 +340,7 @@ document.addEventListener('keydown', (event: Event) => {
 })
 
 $input.focus()
-
 $initialText.focus()
-
 
 $incrementSpeedButton.addEventListener('click', event => {
   app.speaker.incrementSpeed()
