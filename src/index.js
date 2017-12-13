@@ -1,16 +1,14 @@
 // @flow
 import NoSleep from 'nosleep.js'
+import sha256 from 'sha256'
 
 const $input = document.querySelector('#input-textarea')
 const $initialText = document.querySelector('#initial-text')
 const $button = document.querySelector('#button')
-
 const $incrementSpeedButton = document.querySelector('#increment-speed')
 const $decrementSpeedButton = document.querySelector('#decrement-speed')
-
 const $progressBar = document.querySelector('#progress-bar')
 const $progressPointer = document.querySelector('#progress-pointer')
-
 const $timeLeft = document.querySelector('#time-left')
 
 const ALPHABET = {
@@ -114,6 +112,9 @@ const app = {
     tokensCount: 0,
     currentTokenIndex: 0,
     textReadingDuration: 0,
+    originalText: null,
+    textSha256: null,
+    textTokens: [],
     get currentProgress() {
       return this.currentTokenIndex / this.tokensCount
     },
@@ -149,7 +150,6 @@ const app = {
     }
   }
 }
-window.app = app
 
 /*
  * Analyses the first letter in the word
@@ -233,12 +233,8 @@ const concatSpeakEventsSentences =
   (speakEventsSentences: Array<Array<Object>>): Array<Object> =>
     speakEventsSentences.reduce((a, b) => a.concat(b), [])
 
-app.speakItLoud = () => {
-  const text = formatText($input.innerText.trim())
+const splitIntoTextTokens = text => {
   const sentences = splitTextIntoSentences(text)
-  console.log(sentences)
-
-  app.reader.textReadingDuration = getTextReadingDuration(text, app.speaker.currentSpeed)
 
   const textTokensArray = sentences.map(sentence => compose(
     filterWordsArray,
@@ -254,11 +250,43 @@ app.speakItLoud = () => {
       joinOneLanguageWords
     )(textTokens))
 
-  const promises = []
   const phrases = concatSpeakEventsSentences(speakEventsSentences)
-  console.log(phrases)
-  app.reader.tokensCount = phrases.length
-  phrases.forEach(phrase =>
+  return phrases
+}
+
+const proccessingTextToSpeech = (text: string): void => {
+  if (app.reader.textSha256 && app.reader.textSha256 === sha256(text)) {
+    console.error('text is the same, continue...')
+    return
+  }
+  text = formatText(text)
+  app.reader.originalText  = text
+  app.reader.textSha256 = sha256(text)
+  app.reader.textTokens = splitIntoTextTokens(text)
+  app.reader.tokensCount = app.reader.textTokens.length
+  app.reader.textReadingDuration = getTextReadingDuration(text, app.speaker.currentSpeed)
+}
+
+const renderTransformedText = () => {
+  $input.innerHTML = ''
+  app.reader.textTokens.forEach((token, index) => {
+    const divToken = document.createElement('span')
+    divToken.innerText = token.text + '.'
+    divToken.id = `token-${index}`
+    divToken.classList.add('token')
+    divToken.setAttribute('spellcheck', 'false')
+    $input.appendChild(divToken)
+  })
+}
+
+app.speakItLoud = () => {
+  const text = $input.innerText.trim()
+  proccessingTextToSpeech(text)
+  renderTransformedText()
+
+  const promises = []
+  console.log(app.reader.textTokens)
+  app.reader.textTokens.forEach(phrase =>
     promises.push(() => new Promise((resolve, reject) => {
 
       app.speaker.speak(phrase)
@@ -339,30 +367,21 @@ $input.addEventListener('keydown', (event: Event) => {
 
 $input.classList.add('input-textarea--initial')
 $input.addEventListener('paste', (event: Event) => {
+  event.preventDefault()
   $initialText.remove()
   $input.classList.remove('input-textarea--initial')
-  event.preventDefault()
 
-  let pastedText = ''
   const clipboardData = event.clipboardData ||
     window.clipboardData || event.originalEvent.clipboardData
 
-  pastedText = clipboardData.getData('Text')
+  const pastedText = clipboardData.getData('Text')
 
   const hiddenInput = document.createElement('div')
   hiddenInput.innerHTML = pastedText
 
   const text = hiddenInput.textContent
-  const sentences = splitTextIntoSentences(text)
-  console.log(sentences)
-  sentences.forEach((sentence, index) => {
-    const divToken = document.createElement('span')
-    divToken.innerText = sentence + '.'
-    divToken.id = `token-${index}`
-    divToken.classList.add('token')
-    divToken.setAttribute('spellcheck', 'false')
-    $input.appendChild(divToken)
-  })
+  proccessingTextToSpeech(text)
+  renderTransformedText()
   // $input.innerHTML = text
   console.log(text)
 })
