@@ -1,7 +1,7 @@
 # SpeakItLoud
 Text-to-speech app, based on simplicity and accessebility.
 
-[**SpeakItLoud** — Please check it out](fletcherist.github.io/speakitloud)
+[**SpeakItLoud** — Please check it out](https://fletcherist.github.io/speakitloud)
 
 <img src='https://thumbs.gfycat.com/WhiteFalseLeopard-size_restricted.gif' height=500 />
 
