@@ -60,7 +60,6 @@ class Speaker {
     if (!utter && !this.currentUtterance) return false
     if (!utter) {
       console.error('Empty utter text')
-      return false
     }
     this.currentUtterance = utter || this.currentUtterance
     if (this.synth.speaking) {
