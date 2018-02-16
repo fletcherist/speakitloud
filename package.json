@@ -39,16 +39,13 @@
     "eslint-plugin-standard": "^3.0.1",
     "flow-bin": "^0.56.0",
     "webpack": "^3.6.0",
-    "webpack-livereload-plugin": "^1.0.0"
+    "webpack-livereload-plugin": "^1.0.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
   },
   "dependencies": {
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "draft-js": "^0.10.4",
     "nosleep.js": "^0.7.0",
     "queue": "^4.4.2",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
     "sha256": "^0.2.0",
     "striptags": "^3.1.1"
   }
